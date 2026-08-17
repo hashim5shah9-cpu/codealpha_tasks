@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Confirmed - ShopEase{% endblock %}
+
+{% block content %}
+<div class="confirmation-page">
+    <div class="confirmation-icon">&#10003;</div>
+    <h1>Order Placed Successfully!</h1>
+    <p class="order-number">Order #{{ order.id }}</p>
+
+    <div class="confirmation-details">
+        <h2>Order Details</h2>
+        <div class="detail-group">
+            <p><strong>Name:</strong> {{ order.full_name }}</p>
+            <p><strong>Email:</strong> {{ order.email }}</p>
+            <p><strong>Phone:</strong> {{ order.phone }}</p>
+            <p><strong>Address:</strong> {{ order.address }}, {{ order.city }} - {{ order.postal_code }}</p>
+        </div>
+
+        <h3>Items Ordered</h3>
+        <table class="order-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.price }}</td>
+                    <td>${{ item.subtotal }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"><strong>Total</strong></td>
+                    <td><strong>${{ order.total }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="confirmation-actions">
+            <a href="{% url 'product_list' %}" class="btn btn-primary">Continue Shopping</a>
+            <a href="{% url 'order_history' %}" class="btn btn-secondary">View My Orders</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

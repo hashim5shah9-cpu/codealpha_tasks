@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - ShopEase{% endblock %}
+
+{% block content %}
+<div class="product-detail">
+    <div class="breadcrumb">
+        <a href="{% url 'product_list' %}">Products</a> /
+        <a href="{% url 'product_list' %}?category={{ product.category.slug }}">{{ product.category.name }}</a> /
+        <span>{{ product.name }}</span>
+    </div>
+
+    <div class="product-detail-grid">
+        <div class="product-detail-image">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+            {% else %}
+            <div class="product-image-placeholder large {{ product.category.slug }}">
+                {% if product.category.slug == 'electronics' %}
+                <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                {% elif product.category.slug == 'clothing' %}
+                <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/></svg>
+                {% elif product.category.slug == 'books' %}
+                <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                {% else %}
+                <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="product-detail-info">
+            <h1>{{ product.name }}</h1>
+            <span class="product-category-badge">{{ product.category.name }}</span>
+            <p class="product-price-large">${{ product.price }}</p>
+            <div class="product-description">
+                {{ product.description|linebreaksbr }}
+            </div>
+            <div class="stock-status {% if product.in_stock %}in-stock{% else %}out-of-stock{% endif %}">
+                {% if product.in_stock %}
+                    In Stock ({{ product.stock }} available)
+                {% else %}
+                    Out of Stock
+                {% endif %}
+            </div>
+            {% if product.in_stock %}
+            <form method="post" action="{% url 'add_to_cart' product.id %}" class="add-to-cart-form">
+                {% csrf_token %}
+                <div class="quantity-selector">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" name="quantity" id="quantity" value="1" min="1" max="{{ product.stock }}">
+                </div>
+                <button type="submit" class="btn btn-primary btn-large">Add to Cart</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if related_products %}
+    <div class="related-products">
+        <h2>Related Products</h2>
+        <div class="products-grid">
+            {% for rp in related_products %}
+            <div class="product-card">
+                <a href="{{ rp.get_absolute_url }}">
+                    <div class="product-image-wrapper">
+                        {% if rp.image %}
+                        <img src="{{ rp.image.url }}" alt="{{ rp.name }}" class="product-image">
+                        {% else %}
+                        <div class="product-image-placeholder {{ rp.category.slug }}">
+                            {% if rp.category.slug == 'electronics' %}
+                            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                            {% elif rp.category.slug == 'clothing' %}
+                            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/></svg>
+                            {% elif rp.category.slug == 'books' %}
+                            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                            {% else %}
+                            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </a>
+                <div class="product-info">
+                    <h3><a href="{{ rp.get_absolute_url }}">{{ rp.name }}</a></h3>
+                    <p class="product-price">${{ rp.price }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

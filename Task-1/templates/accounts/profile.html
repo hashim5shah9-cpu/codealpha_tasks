@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - ShopEase{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <span>{{ profile_user.username|first|upper }}</span>
+        </div>
+        <div class="profile-info">
+            <h1>{% if profile_user.first_name %}{{ profile_user.first_name }} {{ profile_user.last_name }}{% else %}{{ profile_user.username }}{% endif %}</h1>
+            <p class="profile-email">{{ profile_user.email }}</p>
+            <p class="profile-joined">Member since {{ profile_user.date_joined|date:"M Y" }}</p>
+        </div>
+        <a href="{% url 'edit_profile' %}" class="btn btn-secondary">Edit Profile</a>
+    </div>
+
+    <div class="profile-stats">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+            </div>
+            <div class="stat-content">
+                <span class="stat-number">{{ order_count }}</span>
+                <span class="stat-label">Total Orders</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon money">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+            <div class="stat-content">
+                <span class="stat-number">${{ total_spent|floatformat:2 }}</span>
+                <span class="stat-label">Total Spent</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon cart">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            </div>
+            <div class="stat-content">
+                <span class="stat-number">{{ cart_items }}</span>
+                <span class="stat-label">Cart Items</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-section">
+        <div class="section-header">
+            <h2>Recent Orders</h2>
+            {% if orders %}
+            <a href="{% url 'order_history' %}" class="view-all">View All</a>
+            {% endif %}
+        </div>
+        {% if orders %}
+        <div class="recent-orders">
+            {% for order in orders %}
+            <div class="recent-order-card">
+                <div class="recent-order-left">
+                    <span class="recent-order-id">Order #{{ order.id }}</span>
+                    <span class="recent-order-date">{{ order.created|date:"M d, Y" }}</span>
+                </div>
+                <div class="recent-order-middle">
+                    {% for item in order.items.all %}
+                    <span class="recent-order-item">{{ item.product.name }}</span>
+                    {% endfor %}
+                </div>
+                <div class="recent-order-right">
+                    <span class="recent-order-total">${{ order.total }}</span>
+                    <span class="order-status status-{{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-orders">
+            <p>No orders yet. <a href="{% url 'product_list' %}">Start shopping!</a></p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="profile-section">
+        <h2>Account Details</h2>
+        <div class="account-details">
+            <div class="detail-row">
+                <span class="detail-label">Username</span>
+                <span class="detail-value">{{ profile_user.username }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Email</span>
+                <span class="detail-value">{{ profile_user.email }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Full Name</span>
+                <span class="detail-value">{% if profile_user.first_name %}{{ profile_user.first_name }} {{ profile_user.last_name }}{% else %}Not set{% endif %}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Last Login</span>
+                <span class="detail-value">{{ profile_user.last_login|date:"M d, Y H:i" }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

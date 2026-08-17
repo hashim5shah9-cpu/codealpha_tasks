@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - ShopEase{% endblock %}
+
+{% block content %}
+<div class="checkout-page">
+    <h1>Checkout</h1>
+
+    <div class="checkout-content">
+        <form method="post" class="checkout-form">
+            {% csrf_token %}
+            <div class="form-section">
+                <h2>Shipping Information</h2>
+                <div class="form-group">
+                    <label for="full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" required value="{{ user.get_full_name|default:user.username }}">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required value="{{ user.email|default:'' }}">
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <textarea id="address" name="address" rows="3" required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city" name="city" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="postal_code">Postal Code</label>
+                        <input type="text" id="postal_code" name="postal_code" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="order-summary-section">
+                <h2>Order Summary</h2>
+                <div class="order-items">
+                    {% for item in cart.items.all %}
+                    <div class="order-item-row">
+                        <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                        <span>${{ item.subtotal }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="order-total">
+                    <span>Total:</span>
+                    <span>${{ cart.total }}</span>
+                </div>
+                <button type="submit" class="btn btn-primary btn-large btn-block">Place Order</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

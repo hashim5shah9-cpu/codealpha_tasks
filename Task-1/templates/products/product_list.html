@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Products - ShopEase{% endblock %}
+
+{% block content %}
+<div class="products-page">
+    <div class="hero-banner">
+        <h1>Welcome to ShopEase</h1>
+        <p>Discover amazing products at unbeatable prices</p>
+    </div>
+
+    <div class="page-header">
+        <h1>{% if active_category %}{{ active_category|title }} Products{% else %}All Products{% endif %}</h1>
+    </div>
+
+    <div class="category-filter">
+        <a href="{% url 'product_list' %}" class="filter-btn {% if not active_category %}active{% endif %}">All</a>
+        {% for category in categories %}
+        <a href="?category={{ category.slug }}" class="filter-btn {% if active_category == category.slug %}active{% endif %}">{{ category.name }}</a>
+        {% endfor %}
+    </div>
+
+    <div class="products-grid">
+        {% for product in products %}
+        <div class="product-card">
+            <a href="{{ product.get_absolute_url }}">
+                <div class="product-image-wrapper">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                    {% else %}
+                    <div class="product-image-placeholder {{ product.category.slug }}">
+                        {% if product.category.slug == 'electronics' %}
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        {% elif product.category.slug == 'clothing' %}
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/></svg>
+                        {% elif product.category.slug == 'books' %}
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                        {% else %}
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </a>
+            <div class="product-info">
+                <span class="product-category">{{ product.category.name }}</span>
+                <h3><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
+                <p class="product-price">${{ product.price }}</p>
+                <form method="post" action="{% url 'add_to_cart' product.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1">
+                    {% if product.in_stock %}
+                    <button type="submit" class="btn btn-primary btn-small add-to-cart-btn">Add to Cart</button>
+                    {% else %}
+                    <button type="button" class="btn btn-disabled" disabled>Out of Stock</button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>No products found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

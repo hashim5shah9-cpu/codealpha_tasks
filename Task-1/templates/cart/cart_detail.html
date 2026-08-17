@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Shopping Cart - ShopEase{% endblock %}
+
+{% block content %}
+<div class="cart-page">
+    <h1>Shopping Cart</h1>
+
+    {% if cart.items.count > 0 %}
+    <div class="cart-content">
+        <div class="cart-items">
+            {% for item in cart.items.all %}
+            <div class="cart-item">
+                <div class="cart-item-image">
+                    {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                    {% else %}
+                    <div class="product-image-placeholder small {{ item.product.category.slug }}">
+                        {% if item.product.category.slug == 'electronics' %}
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                        {% elif item.product.category.slug == 'clothing' %}
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 01-8 0L3.62 3.46a2 2 0 00-1.34 2.23l.58 3.47a1 1 0 00.99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 002-2V10h2.15a1 1 0 00.99-.84l.58-3.47a2 2 0 00-1.34-2.23z"/></svg>
+                        {% elif item.product.category.slug == 'books' %}
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+                        {% else %}
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="cart-item-info">
+                    <h3><a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a></h3>
+                    <p class="cart-item-price">${{ item.product.price }}</p>
+                </div>
+                <div class="cart-item-actions">
+                    <form method="post" action="{% url 'update_cart' item.product.id %}" class="update-form">
+                        {% csrf_token %}
+                        <input type="number" name="quantity" value="{{ item.quantity }}" min="0" class="quantity-input">
+                        <button type="submit" class="btn btn-secondary btn-small">Update</button>
+                    </form>
+                    <p class="cart-item-subtotal">${{ item.subtotal }}</p>
+                    <a href="{% url 'remove_from_cart' item.product.id %}" class="btn btn-danger btn-small">Remove</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="cart-summary">
+            <h2>Order Summary</h2>
+            <div class="summary-row">
+                <span>Items:</span>
+                <span>{{ cart.item_count }}</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total:</span>
+                <span>${{ cart.total }}</span>
+            </div>
+            {% if user.is_authenticated %}
+            <a href="{% url 'checkout' %}" class="btn btn-primary btn-large btn-block">Proceed to Checkout</a>
+            {% else %}
+            <p class="login-prompt">Please <a href="{% url 'login' %}">login</a> to proceed to checkout.</p>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <h2>Your cart is empty</h2>
+        <p>Looks like you haven't added any products yet.</p>
+        <a href="{% url 'product_list' %}" class="btn btn-primary">Browse Products</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
