@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Reel - ConnectHub{% endblock %}
+
+{% block content %}
+<div class="editor-page">
+    <div class="editor-header">
+        <a href="{% url 'reels' %}" class="editor-back-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <h1>Edit Reel</h1>
+        <div class="editor-header-actions"></div>
+    </div>
+
+    <div class="edit-reel-card">
+        <form method="post" action="{% url 'edit_reel' reel_id=reel.id %}" enctype="multipart/form-data" class="edit-form">
+            {% csrf_token %}
+
+            {% if reel.video %}
+            <div class="current-media" id="currentReelMedia">
+                <p class="media-label">Current Video:</p>
+                <video class="current-video" controls>
+                    <source src="{{ reel.video.url }}" type="video/mp4">
+                </video>
+            </div>
+            {% endif %}
+
+            <div class="media-preview-box" id="editReelMediaPreview" style="display:none;">
+                <p class="media-label">New Video Preview:</p>
+                <div class="preview-wrapper video-preview-wrapper">
+                    <video id="editReelPreviewVideo" controls></video>
+                    <button type="button" class="remove-preview-btn" id="removeEditReelMedia" title="Cancel video change">&times;</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="video" class="upload-btn edit-upload-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                    {% if reel.video %}Change Video{% else %}Upload Video{% endif %}
+                </label>
+                <input type="file" name="video" id="video" accept="video/*" style="display:none">
+            </div>
+
+            <div class="form-group">
+                <label for="caption">Caption</label>
+                <textarea name="caption" rows="3" class="edit-textarea">{{ reel.caption }}</textarea>
+            </div>
+
+            <div class="edit-actions">
+                <a href="{% url 'reels' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

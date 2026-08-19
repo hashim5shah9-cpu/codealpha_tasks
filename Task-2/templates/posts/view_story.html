@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Story Viewer - ConnectHub{% endblock %}
+
+{% block content %}
+<div class="story-viewer-page">
+    <div class="story-viewer">
+        <div class="story-viewer-header">
+            <a href="{% url 'profile' username=story_user.username %}" class="story-viewer-user">
+                <span class="story-viewer-avatar">{{ story_user.username|first|upper }}</span>
+                <span class="story-viewer-name">{{ story_user.username }}</span>
+            </a>
+            {% if story_user == request.user %}
+            <form method="post" action="{% url 'delete_story' story_id=current_story.id %}" class="delete-story-form">
+                {% csrf_token %}
+                <button type="submit" class="delete-story-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                </button>
+            </form>
+            {% endif %}
+            <a href="{% url 'stories' %}" class="close-story">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </a>
+        </div>
+
+        <div class="story-progress">
+            {% for s in user_stories %}
+            <div class="progress-bar {% if s.viewed %}viewed{% endif %} {% if s.story.id == current_story.id %}active{% endif %}">
+                <div class="progress-fill"></div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="story-content">
+            <img src="{{ current_story.image.url }}" alt="Story">
+            {% if current_story.caption %}
+            <div class="story-caption-overlay">
+                <p>{{ current_story.caption }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="story-nav">
+            {% with prev_index=None %}
+            {% for s in user_stories %}
+            {% if s.story.id == current_story.id and not forloop.first %}
+            {% with prev_story=user_stories|slice:"-1" %}
+            <a href="{% url 'view_story' story_id=s.story.id %}" class="story-nav-btn prev">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </a>
+            {% endwith %}
+            {% endif %}
+            {% endfor %}
+            {% endwith %}
+
+            {% for s in user_stories %}
+            {% if s.story.id == current_story.id and not forloop.last %}
+            {% with next_story=user_stories|slice:"1:" %}
+            <a href="{% url 'view_story' story_id=s.story.id %}" class="story-nav-btn next">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </a>
+            {% endwith %}
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var progressBars = document.querySelectorAll('.story-progress .progress-bar.active .progress-fill');
+    if (progressBars.length > 0) {
+        progressBars[0].style.animation = 'progressFill 5s linear forwards';
+    }
+});
+</script>
+{% endblock %}

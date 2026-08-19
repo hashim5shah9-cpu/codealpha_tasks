@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Reels - ConnectHub{% endblock %}
+
+{% block content %}
+<div class="reels-page">
+    <div class="feed-main">
+        <div class="nav-tabs">
+            <a href="{% url 'feed' %}" class="nav-tab">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Posts
+            </a>
+            <a href="{% url 'reels' %}" class="nav-tab active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+                Reels
+            </a>
+            <a href="{% url 'stories' %}" class="nav-tab">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                Stories
+            </a>
+        </div>
+
+        <div class="create-reel-card">
+            <form method="post" action="{% url 'create_reel' %}" enctype="multipart/form-data" id="createReelForm">
+                {% csrf_token %}
+                <div class="reel-upload">
+                    <label for="reel-video" class="upload-area" id="reelUploadLabel">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                        <span>Upload Reel</span>
+                    </label>
+                    <input type="file" name="video" id="reel-video" accept="video/*" required style="display:none">
+                    <div class="media-preview-box" id="reelMediaPreview" style="display:none;">
+                        <div class="preview-wrapper video-preview-wrapper">
+                            <video id="reelPreviewVideo" controls></video>
+                            <button type="button" class="remove-preview-btn" id="removeReelMedia" title="Remove video">&times;</button>
+                        </div>
+                    </div>
+                </div>
+                <input type="text" name="caption" placeholder="Add a caption..." class="reel-caption-input">
+                <button type="submit" class="btn btn-primary btn-sm">Share Reel</button>
+            </form>
+        </div>
+
+        <div class="reels-grid">
+            {% for reel in reels %}
+            <div class="reel-card">
+                <div class="reel-video-container">
+                    <video class="reel-video" controls>
+                        <source src="{{ reel.video.url }}" type="video/mp4">
+                    </video>
+                    {% if reel.user == request.user %}
+                    <div class="reel-owner-actions">
+                        <a href="{% url 'edit_reel' reel_id=reel.id %}" class="edit-reel-btn" title="Edit reel">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </a>
+                        <form method="post" action="{% url 'delete_reel' reel_id=reel.id %}" class="delete-reel-form">
+                            {% csrf_token %}
+                            <button type="submit" class="delete-reel-btn" title="Delete reel">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="reel-info">
+                    <a href="{% url 'profile' username=reel.user.username %}" class="reel-author">
+                        <span class="reel-avatar">{{ reel.user.username|first|upper }}</span>
+                        <span class="reel-username">{{ reel.user.username }}</span>
+                    </a>
+                    {% if reel.caption %}
+                    <p class="reel-caption">{{ reel.caption }}</p>
+                    {% endif %}
+                    <div class="reel-actions">
+                        <form method="post" action="{% url 'reel_like_toggle' reel_id=reel.id %}" class="like-form">
+                            {% csrf_token %}
+                            <button type="submit" class="action-btn {% if reel.is_liked %}liked{% endif %}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="{% if reel.is_liked %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                                <span class="likes-count">{{ reel.likes_count_agg }}</span>
+                            </button>
+                        </form>
+                        <button class="action-btn reel-comment-toggle">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                            <span>{{ reel.comments_count_agg }}</span>
+                        </button>
+                    </div>
+                    <div class="reel-comments-section" style="display:none;">
+                        <div class="reel-comments-list">
+                            {% for comment in reel.reel_comments.all %}
+                            <div class="comment">
+                                <a href="{% url 'profile' username=comment.user.username %}" class="comment-avatar">{{ comment.user.username|first|upper }}</a>
+                                <div class="comment-body">
+                                    <a href="{% url 'profile' username=comment.user.username %}" class="comment-author">{{ comment.user.username }}</a>
+                                    <span class="comment-text">{{ comment.content }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <form method="post" action="{% url 'add_reel_comment' reel_id=reel.id %}" class="comment-form">
+                            {% csrf_token %}
+                            <input type="text" name="content" placeholder="Write a comment..." required>
+                            <button type="submit" class="btn btn-primary btn-sm">Post</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                <h2>No reels yet</h2>
+                <p>Upload your first reel to get started!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

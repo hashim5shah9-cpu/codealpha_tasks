@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Post - ConnectHub{% endblock %}
+
+{% block content %}
+<div class="editor-page">
+    <div class="editor-header">
+        <a href="{% url 'feed' %}" class="editor-back-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </a>
+        <h1>Edit Post</h1>
+        <div class="editor-header-actions"></div>
+    </div>
+
+    <div class="edit-post-card">
+        <form method="post" action="{% url 'edit_post' post_id=post.id %}" enctype="multipart/form-data" class="edit-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <textarea name="content" rows="4" class="edit-textarea" required>{{ post.content }}</textarea>
+            </div>
+
+            {% if post.image %}
+            <div class="current-media" id="currentPostMedia">
+                <p class="media-label">Current Image:</p>
+                <img src="{{ post.image.url }}" alt="Current post image" class="current-image">
+            </div>
+            {% endif %}
+
+            <div class="media-preview-box" id="editPostMediaPreview" style="display:none;">
+                <p class="media-label">New Image Preview:</p>
+                <div class="preview-wrapper">
+                    <img id="editPostPreviewImg" src="" alt="New image preview">
+                    <button type="button" class="remove-preview-btn" id="removeEditPostMedia" title="Cancel image change">&times;</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="image" class="upload-btn edit-upload-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    {% if post.image %}Change Image{% else %}Add Image{% endif %}
+                </label>
+                <input type="file" name="image" id="image" accept="image/*" style="display:none">
+            </div>
+
+            <div class="edit-actions">
+                <a href="{% url 'feed' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

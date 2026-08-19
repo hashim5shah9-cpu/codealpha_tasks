@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up - ConnectHub{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            <h1>Join ConnectHub</h1>
+            <p>Create your account and start connecting</p>
+        </div>
+        <form method="post" class="auth-form">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="id_first_name">First Name</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="form-group">
+                    <label for="id_last_name">Last Name</label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="id_username">Username</label>
+                {{ form.username }}
+            </div>
+            <div class="form-group">
+                <label for="id_email">Email</label>
+                {{ form.email }}
+            </div>
+            <div class="form-group">
+                <label for="id_password1">Password</label>
+                {{ form.password1 }}
+            </div>
+            <div class="form-group">
+                <label for="id_password2">Confirm Password</label>
+                {{ form.password2 }}
+            </div>
+            {% if form.errors %}
+            <div class="form-errors">
+                {% for field in form %}
+                {% for error in field.errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+        </form>
+        <p class="auth-switch">Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+    </div>
+</div>
+{% endblock %}

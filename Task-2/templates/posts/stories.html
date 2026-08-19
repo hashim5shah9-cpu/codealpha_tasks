@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Stories - ConnectHub{% endblock %}
+
+{% block content %}
+<div class="stories-page">
+    <div class="feed-main">
+        <div class="nav-tabs">
+            <a href="{% url 'feed' %}" class="nav-tab">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Posts
+            </a>
+            <a href="{% url 'reels' %}" class="nav-tab">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+                Reels
+            </a>
+            <a href="{% url 'stories' %}" class="nav-tab active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                Stories
+            </a>
+        </div>
+
+        <div class="create-story-card">
+            <form method="post" action="{% url 'create_story' %}" enctype="multipart/form-data" id="createStoryForm">
+                {% csrf_token %}
+                <div class="story-upload">
+                    <label for="story-image" class="upload-area" id="storyUploadLabel">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        <span>Add to Story</span>
+                    </label>
+                    <input type="file" name="image" id="story-image" accept="image/*" required style="display:none">
+                    <div class="media-preview-box" id="storyMediaPreview" style="display:none;">
+                        <div class="preview-wrapper">
+                            <img id="storyPreviewImg" src="" alt="Story media preview">
+                            <button type="button" class="remove-preview-btn" id="removeStoryMedia" title="Remove image">&times;</button>
+                        </div>
+                    </div>
+                </div>
+                <input type="text" name="caption" placeholder="Add text to your story..." class="story-caption-input">
+                <button type="submit" class="btn btn-primary btn-sm">Share Story</button>
+            </form>
+        </div>
+
+        <div class="stories-grid">
+            {% for story_data in stories %}
+            <a href="{% url 'view_story' story_id=story_data.stories.0.id %}" class="story-card {% if story_data.viewed %}viewed{% endif %}">
+                <div class="story-card-avatar">
+                    {% if story_data.user.profile.profile_pic %}
+                    <img src="{{ story_data.user.profile.profile_pic.url }}" alt="{{ story_data.user.username }}">
+                    {% else %}
+                    <span>{{ story_data.user.username|first|upper }}</span>
+                    {% endif %}
+                </div>
+                <div class="story-card-info">
+                    <span class="story-card-name">{{ story_data.user.username }}</span>
+                    <span class="story-card-count">{{ story_data.stories|length }} story</span>
+                </div>
+            </a>
+            {% empty %}
+            <div class="empty-state">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+                <h2>No stories yet</h2>
+                <p>Share your moments with a story!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

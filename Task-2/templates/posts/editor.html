@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create {{ editor_type|title }} - ConnectHub{% endblock %}
+
+{% block content %}
+<div class="editor-page">
+    <div class="editor-header">
+        <button class="editor-back-btn" id="backBtn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1 id="editorTitle">New {{ editor_type|title }}</h1>
+        <div class="editor-header-actions">
+            <button class="btn btn-secondary btn-sm" id="saveDraftBtn">Save Draft</button>
+        </div>
+    </div>
+
+    <!-- Step 1: Select Media -->
+    <div class="editor-step active" id="step1">
+        <div class="media-select-area" id="mediaSelectArea">
+            <input type="file" id="mediaInput" accept="image/*,video/*" style="display:none">
+            <div class="media-select-content">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                <h2>Select Media</h2>
+                <p>Choose an image or video from your device</p>
+                <button class="btn btn-primary" id="selectMediaBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Select from Gallery
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: Preview & Edit -->
+    <div class="editor-step" id="step2">
+        <div class="editor-workspace">
+            <div class="editor-preview-container">
+                <div class="editor-preview" id="editorPreview">
+                    <canvas id="editCanvas" style="display:none;"></canvas>
+                    <video id="videoPreview" style="display:none;" controls></video>
+                    <img id="imagePreview" style="display:none;">
+                </div>
+                <div class="editor-toolbar-top">
+                    <button class="toolbar-btn" id="undoBtn" title="Undo">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                    </button>
+                    <button class="toolbar-btn" id="redoBtn" title="Redo">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                    </button>
+                    <button class="toolbar-btn" id="resetBtn" title="Reset">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    </button>
+                    <button class="toolbar-btn" id="changeMediaBtn" title="Change Media">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="editor-tools-panel">
+                <div class="tools-tabs">
+                    <button class="tool-tab active" data-tab="adjust">Adjust</button>
+                    <button class="tool-tab" data-tab="filters">Filters</button>
+                    <button class="tool-tab" data-tab="crop">Crop</button>
+                    <button class="tool-tab" data-tab="text">Text</button>
+                    <button class="tool-tab" data-tab="stickers">Stickers</button>
+                    {% if editor_type != 'post' %}
+                    <button class="tool-tab" data-tab="music">Music</button>
+                    {% endif %}
+                </div>
+
+                <!-- Adjust Tools -->
+                <div class="tool-panel active" id="adjustPanel">
+                    <div class="slider-group">
+                        <label>Brightness</label>
+                        <input type="range" min="-100" max="100" value="0" id="brightnessSlider" class="editor-slider">
+                        <span class="slider-value" id="brightnessValue">0</span>
+                    </div>
+                    <div class="slider-group">
+                        <label>Contrast</label>
+                        <input type="range" min="-100" max="100" value="0" id="contrastSlider" class="editor-slider">
+                        <span class="slider-value" id="contrastValue">0</span>
+                    </div>
+                    <div class="slider-group">
+                        <label>Saturation</label>
+                        <input type="range" min="-100" max="100" value="0" id="saturationSlider" class="editor-slider">
+                        <span class="slider-value" id="saturationValue">0</span>
+                    </div>
+                    <div class="slider-group">
+                        <label>Warmth</label>
+                        <input type="range" min="-100" max="100" value="0" id="warmthSlider" class="editor-slider">
+                        <span class="slider-value" id="warmthValue">0</span>
+                    </div>
+                    <div class="slider-group">
+                        <label>Blur</label>
+                        <input type="range" min="0" max="20" value="0" id="blurSlider" class="editor-slider">
+                        <span class="slider-value" id="blurValue">0</span>
+                    </div>
+                    <div class="rotation-tools">
+                        <button class="tool-btn" id="rotateLeftBtn" title="Rotate Left">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                        </button>
+                        <button class="tool-btn" id="rotateRightBtn" title="Rotate Right">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                        </button>
+                        <button class="tool-btn" id="flipHorizontalBtn" title="Flip Horizontal">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M16 7l4 5-4 5"/><path d="M8 7l-4 5 4 5"/></svg>
+                        </button>
+                        <button class="tool-btn" id="flipVerticalBtn" title="Flip Vertical">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18"/><path d="M7 8l5-4 5 4"/><path d="M7 16l5 4 5-4"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="tool-panel" id="filtersPanel">
+                    <div class="filters-grid">
+                        <button class="filter-btn active" data-filter="none">
+                            <div class="filter-preview original"></div>
+                            <span>Normal</span>
+                        </button>
+                        <button class="filter-btn" data-filter="grayscale">
+                            <div class="filter-preview grayscale"></div>
+                            <span>Grayscale</span>
+                        </button>
+                        <button class="filter-btn" data-filter="sepia">
+                            <div class="filter-preview sepia"></div>
+                            <span>Sepia</span>
+                        </button>
+                        <button class="filter-btn" data-filter="vintage">
+                            <div class="filter-preview vintage"></div>
+                            <span>Vintage</span>
+                        </button>
+                        <button class="filter-btn" data-filter="warm">
+                            <div class="filter-preview warm"></div>
+                            <span>Warm</span>
+                        </button>
+                        <button class="filter-btn" data-filter="cool">
+                            <div class="filter-preview cool"></div>
+                            <span>Cool</span>
+                        </button>
+                        <button class="filter-btn" data-filter="dramatic">
+                            <div class="filter-preview dramatic"></div>
+                            <span>Dramatic</span>
+                        </button>
+                        <button class="filter-btn" data-filter="fade">
+                            <div class="filter-preview fade"></div>
+                            <span>Fade</span>
+                        </button>
+                        <button class="filter-btn" data-filter="vivid">
+                            <div class="filter-preview vivid"></div>
+                            <span>Vivid</span>
+                        </button>
+                        <button class="filter-btn" data-filter="retro">
+                            <div class="filter-preview retro"></div>
+                            <span>Retro</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Crop -->
+                <div class="tool-panel" id="cropPanel">
+                    <div class="crop-options">
+                        <button class="crop-btn active" data-ratio="free">Free</button>
+                        <button class="crop-btn" data-ratio="1:1">1:1</button>
+                        <button class="crop-btn" data-ratio="4:5">4:5</button>
+                        <button class="crop-btn" data-ratio="16:9">16:9</button>
+                        <button class="crop-btn" data-ratio="9:16">9:16</button>
+                    </div>
+                    <div class="crop-apply">
+                        <button class="btn btn-primary btn-sm" id="applyCropBtn">Apply Crop</button>
+                    </div>
+                </div>
+
+                <!-- Text -->
+                <div class="tool-panel" id="textPanel">
+                    <div class="text-tools">
+                        <textarea id="textInput" placeholder="Enter text..." rows="2"></textarea>
+                        <div class="text-options">
+                            <div class="color-picker-row">
+                                <label>Text Color</label>
+                                <input type="color" id="textColor" value="#ffffff">
+                            </div>
+                            <div class="slider-group">
+                                <label>Font Size</label>
+                                <input type="range" min="12" max="72" value="24" id="fontSizeSlider" class="editor-slider">
+                            </div>
+                            <select id="fontFamily" class="text-select">
+                                <option value="Arial">Arial</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Verdana">Verdana</option>
+                            </select>
+                            <div class="text-style-btns">
+                                <button class="style-btn" id="boldBtn"><b>B</b></button>
+                                <button class="style-btn" id="italicBtn"><i>I</i></button>
+                                <button class="style-btn" id="underlineBtn"><u>U</u></button>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" id="addTextBtn">Add Text</button>
+                    </div>
+                </div>
+
+                <!-- Stickers -->
+                <div class="tool-panel" id="stickersPanel">
+                    <div class="stickers-grid">
+                        <button class="sticker-btn" data-emoji="😀">😀</button>
+                        <button class="sticker-btn" data-emoji="😍">😍</button>
+                        <button class="sticker-btn" data-emoji="🔥">🔥</button>
+                        <button class="sticker-btn" data-emoji="❤️">❤️</button>
+                        <button class="sticker-btn" data-emoji="⭐">⭐</button>
+                        <button class="sticker-btn" data-emoji="🎉">🎉</button>
+                        <button class="sticker-btn" data-emoji="👍">👍</button>
+                        <button class="sticker-btn" data-emoji="💪">💪</button>
+                        <button class="sticker-btn" data-emoji="🎵">🎵</button>
+                        <button class="sticker-btn" data-emoji="📸">📸</button>
+                        <button class="sticker-btn" data-emoji="✈️">✈️</button>
+                        <button class="sticker-btn" data-emoji="🌟">🌟</button>
+                        <button class="sticker-btn" data-emoji="🍕">🍕</button>
+                        <button class="sticker-btn" data-emoji="🎮">🎮</button>
+                        <button class="sticker-btn" data-emoji="🌈">🌈</button>
+                        <button class="sticker-btn" data-emoji="💫">💫</button>
+                        <button class="sticker-btn" data-emoji="🌸">🌸</button>
+                        <button class="sticker-btn" data-emoji="🦋">🦋</button>
+                        <button class="sticker-btn" data-emoji="🎭">🎭</button>
+                        <button class="sticker-btn" data-emoji="💎">💎</button>
+                    </div>
+                </div>
+
+                {% if editor_type != 'post' %}
+                <!-- Music -->
+                <div class="tool-panel" id="musicPanel">
+                    <div class="music-search">
+                        <input type="text" id="musicSearch" placeholder="Search music...">
+                    </div>
+                    <div class="music-list" id="musicList">
+                        <div class="music-item" data-url="">
+                            <div class="music-info">
+                                <span class="music-title">No Music</span>
+                                <span class="music-artist">Remove background music</span>
+                            </div>
+                        </div>
+                        <div class="music-item" data-url="https://example.com/music1.mp3">
+                            <div class="music-info">
+                                <span class="music-title">Summer Vibes</span>
+                                <span class="music-artist">Chill Beats</span>
+                            </div>
+                            <span class="music-duration">3:24</span>
+                        </div>
+                        <div class="music-item" data-url="https://example.com/music2.mp3">
+                            <div class="music-info">
+                                <span class="music-title">Night Drive</span>
+                                <span class="music-artist">Synthwave</span>
+                            </div>
+                            <span class="music-duration">4:12</span>
+                        </div>
+                        <div class="music-item" data-url="https://example.com/music3.mp3">
+                            <div class="music-info">
+                                <span class="music-title">Morning Coffee</span>
+                                <span class="music-artist">Lo-Fi</span>
+                            </div>
+                            <span class="music-duration">2:56</span>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="editor-footer">
+            <button class="btn btn-secondary" id="backToStep1">Back</button>
+            <button class="btn btn-primary" id="nextToStep3">Next</button>
+        </div>
+    </div>
+
+    <!-- Step 3: Details & Publish -->
+    <div class="editor-step" id="step3">
+        <div class="details-container">
+            <div class="final-preview" id="finalPreview">
+                <canvas id="finalCanvas"></canvas>
+                <video id="finalVideo" style="display:none;" controls></video>
+            </div>
+            <div class="details-form">
+                <div class="form-group">
+                    <label>Caption</label>
+                    <textarea id="captionInput" placeholder="Write a caption..." rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Hashtags</label>
+                    <input type="text" id="hashtagsInput" placeholder="#travel #photo #vibes">
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="locationInput" placeholder="Add location">
+                </div>
+                <div class="form-group">
+                    <label>Tag People</label>
+                    <input type="text" id="tagInput" placeholder="Search people...">
+                </div>
+                <div class="form-group">
+                    <label>Audience</label>
+                    <select id="privacySelect">
+                        <option value="public">Everyone</option>
+                        <option value="followers">Followers Only</option>
+                        <option value="private">Only Me</option>
+                    </select>
+                </div>
+                {% if editor_type == 'reel' %}
+                <div class="form-group">
+                    <label>Cover Image</label>
+                    <div class="cover-selector">
+                        <input type="range" min="0" max="100" value="0" id="coverSlider" class="editor-slider">
+                        <span id="coverTime">0:00</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="editor-footer">
+            <button class="btn btn-secondary" id="backToStep2">Back</button>
+            <button class="btn btn-primary btn-large" id="publishBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Publish
+            </button>
+        </div>
+    </div>
+
+    <!-- Final Preview Modal -->
+    <div class="modal-overlay" id="previewModal" style="display:none;">
+        <div class="modal-content preview-modal">
+            <div class="modal-header">
+                <h2>Final Preview</h2>
+                <button class="modal-close" id="closePreviewModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-post-card">
+                    <div class="preview-post-header">
+                        <span class="preview-avatar">{{ user.username|first|upper }}</span>
+                        <div>
+                            <span class="preview-username">{{ user.username }}</span>
+                            <span class="preview-location" id="previewLocation"></span>
+                        </div>
+                    </div>
+                    <div class="preview-media" id="previewMedia"></div>
+                    <div class="preview-actions">
+                        <span class="preview-action">♡ 0</span>
+                        <span class="preview-action">💬 0</span>
+                    </div>
+                    <div class="preview-caption" id="previewCaption"></div>
+                    <div class="preview-hashtags" id="previewHashtags"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closePreviewModal">Cancel</button>
+                <button class="btn btn-primary btn-large" id="confirmPublishBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    Confirm &amp; Publish
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>const editorType = '{{ editor_type }}';</script>
+<script src="{% static 'js/editor.js' %}"></script>
+{% endblock %}
